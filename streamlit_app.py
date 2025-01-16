@@ -95,7 +95,7 @@ if st.button("Load and Process"):
         st.write(f"Loaded cached embeddings for {len(cached_urls)} URLs. Number of chunks: {cached_num_chunks}")
     else:
         # Process and embed all URLs (no cache available)
-        loaded_docs = load_and_process_documents(website_urls)
+        loaded_docs = load_and_process_documents(sitemap_urls)
         hf_embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
         st.session_state['vector_db'], num_chunks = create_vector_db(loaded_docs, hf_embedding)
         
