@@ -32,16 +32,16 @@ st.title("Website Intelligence")
 
 api_key = "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"
 
-website_urls_input = st.text_area("Enter website URLs (one per line):")
+#website_urls_input = st.text_area("Enter website URLs (one per line):")
 
-#sitemap_urls_input = st.text_area("Enter sitemap URLs (one per line):")
-#filter_words_input = st.text_area("Enter filter words (one per line):")
+sitemap_urls_input = st.text_area("Enter sitemap URLs (one per line):")
+filter_words_input = st.text_area("Enter filter words (one per line):")
 
 # Cache the loading and processing of URLs and documents
 @st.cache_resource
-def load_and_process_documents(website_urls):
+def load_and_process_documents(sitemap_urls):
     loaded_docs = []
-    for url in website_urls:
+    for url in sitemap_urls:
         try:
             loader = WebBaseLoader(url)
             docs = loader.load()
@@ -84,8 +84,8 @@ def get_cache_key(urls):
 
 # Load and process documents
 if st.button("Load and Process"):
-    website_urls = website_urls_input.splitlines()
-    cache_key = get_cache_key(website_urls)
+    sitemap_urls = sitemap_urls_input.splitlines()
+    cache_key = get_cache_key(sitemap_urls)
     
     # Check if embeddings exist in cache for previous URLs
     if cache_key in st.session_state['embedding_cache']:
