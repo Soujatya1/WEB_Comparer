@@ -100,8 +100,8 @@ if st.button("Load and Process"):
         st.session_state['vector_db'], num_chunks = create_vector_db(loaded_docs, hf_embedding)
         
         # Cache the embeddings and document URLs
-        st.session_state['embedding_cache'][cache_key] = (st.session_state['vector_db'], num_chunks, website_urls)
-        st.write(f"Processed and embedded {len(website_urls)} URLs. Number of chunks: {num_chunks}")
+        st.session_state['embedding_cache'][cache_key] = (st.session_state['vector_db'], num_chunks, sitemap_urls)
+        st.write(f"Processed and embedded {len(sitemap_urls)} URLs. Number of chunks: {num_chunks}")
     
     # LLM Initialization and prompt setup
     if api_key:
