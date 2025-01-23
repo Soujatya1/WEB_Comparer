@@ -16,7 +16,7 @@ SITEMAP_URLS = [
     "https://www.hdfclife.com/universal-sitemap.xml",
     "https://www.reliancenipponlife.com/sitemap.xml",
 ]
-FILTER_WORDS = ["retirement"]
+FILTER_WORDS = ["retired"]
 
 # Backend Function to Load and Process Sitemaps
 @st.cache_data
