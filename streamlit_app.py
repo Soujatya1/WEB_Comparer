@@ -13,10 +13,10 @@ from langchain_groq import ChatGroq
 
 # Hardcoded Sitemaps and Filter Words
 SITEMAP_URLS = [
-    "https://example.com/sitemap1.xml",
-    "https://example.com/sitemap2.xml",
+    "https://www.hdfclife.com/universal-sitemap.xml",
+    "https://www.reliancenipponlife.com/sitemap.xml",
 ]
-FILTER_WORDS = ["insurance", "policy", "life"]
+FILTER_WORDS = ["retirement"]
 
 # Backend Function to Load and Process Sitemaps
 @st.cache_data
