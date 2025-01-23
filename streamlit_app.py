@@ -69,7 +69,7 @@ if st.button("Load and Process"):
     if api_key:
         # Initialize LLM and Embeddings
         llm = ChatGroq(groq_api_key=api_key, model_name="llama-3.1-70b-versatile", temperature=0.2, top_p=0.2)
-        hf_embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
+        hf_embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
         # Text Splitting
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=100)
