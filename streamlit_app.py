@@ -1,35 +1,29 @@
 import streamlit as st
-from langchain.document_loaders.sitemap import SitemapLoader
+from langchain.document_loaders import WebBaseLoader
+from bs4 import BeautifulSoup
+import requests
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import RetrievalQA
-from langchain_groq import ChatGroq
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
-from langchain.chains import RetrievalQA
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains import create_retrieval_chain
-from langchain.document_loaders import WebBaseLoader
-from langchain.document_loaders import PyPDFLoader
-import requests
-from bs4 import BeautifulSoup
+from langchain_groq import ChatGroq
 
-# Streamlit UI
-st.title("Website Intelligence")
+# Hardcoded Sitemaps and Filter Words
+SITEMAP_URLS = [
+    "https://example.com/sitemap1.xml",
+    "https://example.com/sitemap2.xml",
+]
+FILTER_WORDS = ["insurance", "policy", "life"]
 
-api_key = "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"
-
-sitemap_urls_input = st.text_area("Enter sitemap URLs (one per line):")
-filter_words_input = st.text_area("Enter filter words (one per line):")
-
-if st.button("Load and Process"):
-    sitemap_urls = sitemap_urls_input.splitlines()
-    filter_urls = filter_words_input.splitlines()
-    
-    all_urls = []
+# Backend Function to Load and Process Sitemaps
+@st.cache_data
+def process_sitemaps(sitemap_urls, filter_words):
     filtered_urls = []
     loaded_docs = []
-    
+
     for sitemap_url in sitemap_urls:
         try:
             response = requests.get(sitemap_url)
@@ -40,38 +34,52 @@ if st.button("Load and Process"):
             urls = [loc.text for loc in soup.find_all('loc')]
 
             # Filter URLs
-            selected_urls = [url for url in urls if any(filter in url for filter in filter_urls)]
-
-            # Append URLs to the main list
+            selected_urls = [url for url in urls if any(filter_word in url for filter_word in filter_words)]
             filtered_urls.extend(selected_urls)
 
-            for url in filtered_urls:
+            for url in selected_urls:
                 try:
-                    #st.write(f"Loading URL: {url}")
                     loader = WebBaseLoader(url)
                     docs = loader.load()
-
                     for doc in docs:
                         doc.metadata["source"] = url
-
                     loaded_docs.extend(docs)
-                    #st.write("Successfully loaded document")
                 except Exception as e:
-                    st.write(f"Error loading {url}: {e}")
+                    st.warning(f"Error loading {url}: {e}")
 
         except Exception as e:
-            st.write(f"Error processing sitemap {sitemap_url}: {e}")
-    
-    st.write(f"Loaded documents: {len(loaded_docs)}")
-    
-    # LLM
-    if api_key:
-        llm = ChatGroq(groq_api_key="api_key", model_name='llama-3.1-70b-versatile', temperature=0.2, top_p=0.2)
+            st.warning(f"Error processing sitemap {sitemap_url}: {e}")
 
-        # Embedding
+    return loaded_docs, filtered_urls
+
+
+# Streamlit UI
+st.title("Website Intelligence")
+
+# API Key Input
+api_key = st.text_input("Enter API Key:", type="password")
+
+if st.button("Load and Process"):
+    # Call Backend Function with Hardcoded Sitemaps and Filter Words
+    loaded_docs, filtered_urls = process_sitemaps(SITEMAP_URLS, FILTER_WORDS)
+
+    st.write(f"Filtered URLs: {len(filtered_urls)}")
+    st.write(f"Loaded documents: {len(loaded_docs)}")
+
+    if api_key:
+        # Initialize LLM and Embeddings
+        llm = ChatGroq(groq_api_key=api_key, model_name="llama-3.1-70b-versatile", temperature=0.2, top_p=0.2)
         hf_embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
 
-        # Craft ChatPrompt Template
+        # Text Splitting
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=100)
+        document_chunks = text_splitter.split_documents(loaded_docs)
+        st.write(f"Number of chunks: {len(document_chunks)}")
+
+        # Vector Database
+        vector_db = FAISS.from_documents(document_chunks, hf_embedding)
+
+        # Prompt Template
         prompt = ChatPromptTemplate.from_template(
             """
             You are a Life Insurance specialist who needs to answer queries based on the information provided in the websites only. Please follow all the websites, and answer as per the same.
@@ -85,37 +93,21 @@ if st.button("Load and Process"):
             Generate tabular data wherever required to classify the difference between different parameters of policies.
 
             I will tip you with a $1000 if the answer provided is helpful.
-
+            
             <context>
             {context}
             </context>
-
-            Question: {input}"""
-        )
-        
-        # Text Splitting
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=2000,
-            chunk_overlap=100,
-            length_function=len,
+            
+            Question: {input}
+            """
         )
 
-        document_chunks = text_splitter.split_documents(loaded_docs)
-        st.write(f"Number of chunks: {len(document_chunks)}")
-
-        # Vector database storage
-        vector_db = FAISS.from_documents(document_chunks, hf_embedding)
-
-        # Stuff Document Chain Creation
+        # Document Chain and Retriever
         document_chain = create_stuff_documents_chain(llm, prompt)
-
-        # Retriever from Vector store
         retriever = vector_db.as_retriever()
-
-        # Create a retrieval chain
         retrieval_chain = create_retrieval_chain(retriever, document_chain)
 
-        # Query
+        # Query Interface
         query = st.text_input("Enter your query:")
         if st.button("Get Answer"):
             if query:
