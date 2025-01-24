@@ -56,7 +56,7 @@ for sitemap_url in sitemap_urls:
                     doc.metadata["source"] = url
 
                 loaded_docs.extend(docs)
-                st.write("Successfully loaded document")
+                #st.write("Successfully loaded document")
             except Exception as e:
                 st.write(f"Error loading {url}: {e}")
 
