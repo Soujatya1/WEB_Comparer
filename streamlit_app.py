@@ -31,6 +31,7 @@ all_urls = []
 filtered_urls = []
 loaded_docs = []
 
+@st.cache_data
 for sitemap_url in sitemap_urls:
     try:
         response = requests.get(sitemap_url)
