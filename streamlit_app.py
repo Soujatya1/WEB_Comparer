@@ -11,16 +11,20 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains import create_retrieval_chain
 from langchain_groq import ChatGroq
 
-# Hardcoded Sitemaps and Filter Words
-SITEMAP_URLS = [
+# Streamlit UI
+st.title("Website Intelligence")
+
+api_key = "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"
+
+# Hardcoded sitemap URLs and filter words
+sitemap_urls = [
     "https://www.hdfclife.com/universal-sitemap.xml",
     "https://www.reliancenipponlife.com/sitemap.xml",
 ]
-FILTER_WORDS = ["retired"]
+filter_words = ["retirement", "insurance", "policy"]
 
-# Backend Function to Load and Process Sitemaps
-@st.cache_data
-def process_sitemaps(sitemap_urls, filter_words):
+if st.button("Load and Process"):
+    all_urls = []
     filtered_urls = []
     loaded_docs = []
 
@@ -34,52 +38,36 @@ def process_sitemaps(sitemap_urls, filter_words):
             urls = [loc.text for loc in soup.find_all('loc')]
 
             # Filter URLs
-            selected_urls = [url for url in urls if any(filter_word in url for filter_word in filter_words)]
+            selected_urls = [url for url in urls if any(filter in url for filter in filter_words)]
+
+            # Append URLs to the main list
             filtered_urls.extend(selected_urls)
 
-            for url in selected_urls:
+            for url in filtered_urls:
                 try:
                     loader = WebBaseLoader(url)
                     docs = loader.load()
+
                     for doc in docs:
                         doc.metadata["source"] = url
+
                     loaded_docs.extend(docs)
                 except Exception as e:
-                    st.warning(f"Error loading {url}: {e}")
+                    st.write(f"Error loading {url}: {e}")
 
         except Exception as e:
-            st.warning(f"Error processing sitemap {sitemap_url}: {e}")
+            st.write(f"Error processing sitemap {sitemap_url}: {e}")
 
-    return loaded_docs, filtered_urls
-
-
-# Streamlit UI
-st.title("Website Intelligence")
-
-# API Key Input
-api_key = st.text_input("Enter API Key:", type="password")
-
-if st.button("Load and Process"):
-    # Call Backend Function with Hardcoded Sitemaps and Filter Words
-    loaded_docs, filtered_urls = process_sitemaps(SITEMAP_URLS, FILTER_WORDS)
-
-    st.write(f"Filtered URLs: {len(filtered_urls)}")
     st.write(f"Loaded documents: {len(loaded_docs)}")
 
+    # LLM
     if api_key:
-        # Initialize LLM and Embeddings
         llm = ChatGroq(groq_api_key=api_key, model_name="llama-3.1-70b-versatile", temperature=0.2, top_p=0.2)
-        hf_embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
-        # Text Splitting
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=100)
-        document_chunks = text_splitter.split_documents(loaded_docs)
-        st.write(f"Number of chunks: {len(document_chunks)}")
+        # Embedding
+        hf_embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
 
-        # Vector Database
-        vector_db = FAISS.from_documents(document_chunks, hf_embedding)
-
-        # Prompt Template
+        # Craft ChatPrompt Template
         prompt = ChatPromptTemplate.from_template(
             """
             You are a Life Insurance specialist who needs to answer queries based on the information provided in the websites only. Please follow all the websites, and answer as per the same.
@@ -93,21 +81,37 @@ if st.button("Load and Process"):
             Generate tabular data wherever required to classify the difference between different parameters of policies.
 
             I will tip you with a $1000 if the answer provided is helpful.
-            
+
             <context>
             {context}
             </context>
-            
-            Question: {input}
-            """
+
+            Question: {input}"""
         )
 
-        # Document Chain and Retriever
+        # Text Splitting
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=2000,
+            chunk_overlap=100,
+            length_function=len,
+        )
+
+        document_chunks = text_splitter.split_documents(loaded_docs)
+        st.write(f"Number of chunks: {len(document_chunks)}")
+
+        # Vector database storage
+        vector_db = FAISS.from_documents(document_chunks, hf_embedding)
+
+        # Stuff Document Chain Creation
         document_chain = create_stuff_documents_chain(llm, prompt)
+
+        # Retriever from Vector store
         retriever = vector_db.as_retriever()
+
+        # Create a retrieval chain
         retrieval_chain = create_retrieval_chain(retriever, document_chain)
 
-        # Query Interface
+        # Query
         query = st.text_input("Enter your query:")
         if st.button("Get Answer"):
             if query:
