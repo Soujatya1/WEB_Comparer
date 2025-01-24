@@ -57,12 +57,6 @@ def load_and_split_documents(urls, filters):
         except Exception as e:
             st.write(f"Error processing sitemap {sitemap_url}: {e}")
     return loaded_docs
-    
-def create_embeddings(docs):
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=100)
-    chunks = text_splitter.split_documents(docs)
-    vector_db = FAISS.from_documents(chunks, hf_embedding)
-    return vector_db, chunks
 
 # Load and Process Documents with Caching
 with st.spinner("Loading and processing documents..."):
@@ -70,9 +64,12 @@ with st.spinner("Loading and processing documents..."):
 
 st.write(f"Loaded documents: {len(loaded_docs)}")
 
-# Create Embeddings with Caching
-with st.spinner("Generating embeddings and creating vector database..."):
-    vector_db, document_chunks = create_embeddings(loaded_docs)
+if "vectors" not in st.session_state:
+    st.session_state.embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    
+    st.session_state.text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
+    st.session_state.final_documents = st.session_state.text_splitter.split_documents(st.session_state.loaded_docs)
+    st.session_state.vectors = FAISS.from_documents(st.session_state.final_documents, st.session_state.embeddings)
 
 st.write(f"Number of chunks: {len(document_chunks)}")
 
@@ -99,13 +96,13 @@ prompt = ChatPromptTemplate.from_template(
 )
 
 # Stuff Document Chain Creation
-document_chain = create_stuff_documents_chain(llm, prompt)
+#document_chain = create_stuff_documents_chain(llm, prompt)
 
 # Retriever from Vector store
-retriever = vector_db.as_retriever()
+#retriever = vector_db.as_retriever()
 
 # Create a retrieval chain
-retrieval_chain = create_retrieval_chain(retriever, document_chain)
+#retrieval_chain = create_retrieval_chain(retriever, document_chain)
 
 # Query Input Box
 with st.container():
