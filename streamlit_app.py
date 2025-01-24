@@ -84,7 +84,7 @@ prompt = ChatPromptTemplate.from_template(
 
             Generate tabular data wherever required to classify the difference between different parameters of policies.
 
-            I will tip you with a $1000 if the answer provided is helpful.
+            In the question when referred to as two companies, please understand that is for HDFC Life and Reliance Nippon.
 
             <context>
             {context}
