@@ -48,7 +48,7 @@ for sitemap_url in sitemap_urls:
 
         for url in filtered_urls:
             try:
-                st.write(f"Loading URL: {url}")
+                #st.write(f"Loading URL: {url}")
                 loader = WebBaseLoader(url)
                 docs = loader.load()
 
@@ -57,8 +57,8 @@ for sitemap_url in sitemap_urls:
 
                 loaded_docs.extend(docs)
                 st.write("Successfully loaded document")
-            #except Exception as e:
-                #st.write(f"Error loading {url}: {e}")
+            except Exception as e:
+                st.write(f"Error loading {url}: {e}")
 
     except Exception as e:
         st.write(f"Error processing sitemap {sitemap_url}: {e}")
