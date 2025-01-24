@@ -15,7 +15,7 @@ from bs4 import BeautifulSoup
 # Streamlit UI
 st.title("Website Intelligence")
 
-api_key = "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"
+api_key = "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"
 
 # Initialize session state variables
 if "loaded_docs" not in st.session_state:
