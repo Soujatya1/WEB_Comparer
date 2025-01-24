@@ -115,7 +115,15 @@ if st.button("Get Answer"):
         # Directly pass the documents to the chain without using a retriever
         context = "\n".join([doc.page_content for doc in st.session_state.loaded_docs])
         response = st.session_state.retrieval_chain.invoke({"input": query, "context": context})
+
+        # Check the structure of the response
         st.write("Response:")
-        st.write(response['answer'])
+        st.write(response)  # Print the entire response to inspect its format
+
+        # If the response is a dictionary with 'answer' key, use it
+        if isinstance(response, dict) and 'answer' in response:
+            st.write(response['answer'])
+        else:
+            st.write("Unexpected response format.")
     else:
         st.write("No documents loaded. Please load and process the sitemap first.")
