@@ -21,7 +21,7 @@ sitemap_urls = [
     "https://www.hdfclife.com/universal-sitemap.xml",
     "https://www.reliancenipponlife.com/sitemap.xml",
 ]
-filter_words = ["retirement", "insurance", "policy"]
+filter_words = ["retired"]
 
 if st.button("Load and Process"):
     all_urls = []
