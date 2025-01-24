@@ -5,12 +5,10 @@ from langchain.chains import RetrievalQA
 from langchain_groq import ChatGroq
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
-from langchain.chains import RetrievalQA
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains import create_retrieval_chain
 from langchain.document_loaders import WebBaseLoader
-from langchain.document_loaders import PyPDFLoader
 import requests
 from bs4 import BeautifulSoup
 
@@ -19,6 +17,7 @@ st.title("Website Intelligence")
 
 api_key = "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"
 
+# Initialize session state variables
 if "loaded_docs" not in st.session_state:
     st.session_state.loaded_docs = []
 if "retriever" not in st.session_state:
@@ -32,11 +31,11 @@ filter_words_input = st.text_area("Enter filter words (one per line):")
 if st.button("Load and Process"):
     sitemap_urls = sitemap_urls_input.splitlines()
     filter_urls = filter_words_input.splitlines()
-    
+
     all_urls = []
     filtered_urls = []
     loaded_docs = []
-    
+
     for sitemap_url in sitemap_urls:
         try:
             response = requests.get(sitemap_url)
@@ -68,11 +67,12 @@ if st.button("Load and Process"):
 
         except Exception as e:
             st.write(f"Error processing sitemap {sitemap_url}: {e}")
-    
+
     st.write(f"Loaded documents: {len(loaded_docs)}")
+
+    # Store loaded documents in session state
     st.session_state.loaded_docs = loaded_docs
-    
-    # LLM
+
     if api_key:
         llm = ChatGroq(groq_api_key="api_key", model_name='llama-3.1-70b-versatile', temperature=0.2, top_p=0.2)
 
@@ -100,7 +100,7 @@ if st.button("Load and Process"):
 
             Question: {input}"""
         )
-        
+
         # Text Splitting
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=500,
@@ -122,6 +122,8 @@ if st.button("Load and Process"):
 
         # Create a retrieval chain
         retrieval_chain = create_retrieval_chain(retriever, document_chain)
+
+        # Save retriever and retrieval_chain to session state
         st.session_state.retriever = retriever
         st.session_state.retrieval_chain = retrieval_chain
 
