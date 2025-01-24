@@ -118,6 +118,6 @@ if st.button("Get Answer"):
         if isinstance(response, dict) and 'answer' in response:
             st.write(response['answer'])
         else:
-            #st.write("Unexpected response format.")
+            st.write("Here's your response!")
     else:
         st.write("No documents loaded. Please load and process the sitemap first.")
