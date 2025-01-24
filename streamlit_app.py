@@ -60,7 +60,7 @@ def load_and_split_documents(urls, filters):
 
 # Load and Process Documents with Caching
 with st.spinner("Loading and processing documents..."):
-    loaded_docs = load_and_split_documents(sitemap_urls, filter_urls)
+    st.session_state.loaded_docs = load_and_split_documents(sitemap_urls, filter_urls)
 
 st.write(f"Loaded documents: {len(loaded_docs)}")
 
