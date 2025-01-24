@@ -17,7 +17,14 @@ from bs4 import BeautifulSoup
 # Streamlit UI
 st.title("Website Intelligence")
 
-api_key = "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"
+api_key = "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"
+
+if "loaded_docs" not in st.session_state:
+    st.session_state.loaded_docs = []
+if "retriever" not in st.session_state:
+    st.session_state.retriever = None
+if "retrieval_chain" not in st.session_state:
+    st.session_state.retrieval_chain = None
 
 sitemap_urls_input = st.text_area("Enter sitemap URLs (one per line):")
 filter_words_input = st.text_area("Enter filter words (one per line):")
@@ -63,6 +70,7 @@ if st.button("Load and Process"):
             st.write(f"Error processing sitemap {sitemap_url}: {e}")
     
     st.write(f"Loaded documents: {len(loaded_docs)}")
+    st.session_state.loaded_docs = loaded_docs
     
     # LLM
     if api_key:
@@ -114,11 +122,15 @@ if st.button("Load and Process"):
 
         # Create a retrieval chain
         retrieval_chain = create_retrieval_chain(retriever, document_chain)
+        st.session_state.retriever = retriever
+        st.session_state.retrieval_chain = retrieval_chain
 
-        # Query
-        query = st.text_input("Enter your query:")
-        if st.button("Get Answer"):
-            if query:
-                response = retrieval_chain.invoke({"input": query})
-                st.write("Response:")
-                st.write(response['answer'])
+query = st.text_input("Enter your query:")
+if st.button("Get Answer"):
+    if query:
+        if st.session_state.retrieval_chain:
+            response = st.session_state.retrieval_chain.invoke({"input": query})
+            st.write("Response:")
+            st.write(response['answer'])
+        else:
+            st.write("No documents loaded. Please load and process the sitemap first.")
