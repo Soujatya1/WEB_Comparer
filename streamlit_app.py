@@ -69,7 +69,7 @@ if st.button("Load and Process"):
     st.write(f"Loaded documents: {len(loaded_docs)}")
 
     # Store loaded documents in session state
-    st.session_state.loaded_docs = loaded_docs
+st.session_state.loaded_docs = loaded_docs
 
 llm = ChatGroq(groq_api_key="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", model_name='llama-3.1-70b-versatile', temperature=0.2, top_p=0.2)
 
