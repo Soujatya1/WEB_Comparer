@@ -57,7 +57,7 @@ for sitemap_url in sitemap_urls:
 
                 loaded_docs.extend(docs)
                 st.write("Successfully loaded document")
-            except Exception as e:
+            #except Exception as e:
                 #st.write(f"Error loading {url}: {e}")
 
     except Exception as e:
