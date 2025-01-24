@@ -62,7 +62,7 @@ def load_and_split_documents(urls, filters):
 with st.spinner("Loading and processing documents..."):
     st.session_state.loaded_docs = load_and_split_documents(sitemap_urls, filter_urls)
 
-st.write(f"Loaded documents: {len(loaded_docs)}")
+#st.write(f"Loaded documents: {len(loaded_docs)}")
 
 if "vectors" not in st.session_state:
     st.session_state.embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
