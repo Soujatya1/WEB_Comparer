@@ -2,7 +2,7 @@ import streamlit as st
 from utils import load_and_split_documents, create_embeddings
 from langchain.vectorstores import FAISS
 from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.llms import ChatGroq
+from langchain_groq import ChatGroq
 
 # Streamlit UI
 st.title("Website Intelligence Comparer")
