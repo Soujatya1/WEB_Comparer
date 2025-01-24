@@ -63,6 +63,8 @@ if st.button("Load and Process"):
             st.write(f"Error processing sitemap {sitemap_url}: {e}")
     
     st.write(f"Loaded documents: {len(loaded_docs)}")
+
+loaded_docs = []
     
 
 llm = ChatGroq(groq_api_key="api_key", model_name='llama-3.1-70b-versatile', temperature=0.2, top_p=0.2)
