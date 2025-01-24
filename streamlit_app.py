@@ -15,8 +15,6 @@ from bs4 import BeautifulSoup
 # Streamlit UI
 st.title("Website Intelligence")
 
-api_key = "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"
-
 # Initialize session state variables
 if "loaded_docs" not in st.session_state:
     st.session_state.loaded_docs = []
@@ -74,7 +72,7 @@ if st.button("Load and Process"):
     st.session_state.loaded_docs = loaded_docs
 
     if api_key:
-        llm = ChatGroq(groq_api_key="api_key", model_name='llama-3.1-70b-versatile', temperature=0.2, top_p=0.2)
+        llm = ChatGroq(groq_api_key="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", model_name='llama-3.1-70b-versatile', temperature=0.2, top_p=0.2)
 
         # Embedding
         hf_embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-MiniLM-L3-v2")
