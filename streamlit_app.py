@@ -95,7 +95,7 @@ text_splitter = RecursiveCharacterTextSplitter(
 )
 
 document_chunks = text_splitter.split_documents(st.session_state.loaded_docs)
-st.write(f"Number of chunks: {len(document_chunks)}")
+#st.write(f"Number of chunks: {len(document_chunks)}")
 
 # Stuff Document Chain Creation
 document_chain = create_stuff_documents_chain(llm, prompt)
@@ -118,6 +118,6 @@ if st.button("Get Answer"):
         if isinstance(response, dict) and 'answer' in response:
             st.write(response['answer'])
         else:
-            st.write("Unexpected response format.")
+            #st.write("Unexpected response format.")
     else:
         st.write("No documents loaded. Please load and process the sitemap first.")
