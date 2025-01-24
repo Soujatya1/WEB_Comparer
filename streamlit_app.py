@@ -124,6 +124,7 @@ if st.button("Load and Process"):
         # Save retriever and retrieval_chain to session state
         #st.session_state.retriever = retriever
         #st.session_state.retrieval_chain = retrieval_chain
+retriever = vector_db.as_retriever()
 retrieval_chain = create_retrieval_chain(retriever, document_chain)
 query = st.text_input("Enter your query:")
 if st.button("Get Answer"):
