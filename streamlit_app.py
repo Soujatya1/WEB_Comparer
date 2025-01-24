@@ -48,7 +48,7 @@ if st.button("Load and Process"):
 
             for url in filtered_urls:
                 try:
-                    st.write(f"Loading URL: {url}")
+                    #st.write(f"Loading URL: {url}")
                     loader = WebBaseLoader(url)
                     docs = loader.load()
 
@@ -56,7 +56,7 @@ if st.button("Load and Process"):
                         doc.metadata["source"] = url
 
                     loaded_docs.extend(docs)
-                    st.write("Successfully loaded document")
+                    #st.write("Successfully loaded document")
                 except Exception as e:
                     st.write(f"Error loading {url}: {e}")
 
