@@ -28,7 +28,7 @@ filter_urls = filter_words_input.splitlines()
 def load_documents_from_url(url):
     """Loads documents from a given URL."""
     try:
-        loader = SitemapLoader(web_path=url)
+        loader = WebBaseLoader(web_path=url)
         return loader.load()
     except Exception as e:
         st.write(f"Error loading {url}: {e}")
@@ -37,27 +37,44 @@ def load_documents_from_url(url):
 # Define Cached Functions
 @st.cache_data
 def load_and_split_documents(urls, filters):
+    """Loads and processes documents from sitemaps."""
     loaded_docs = []
     for sitemap_url in urls:
         try:
             response = requests.get(sitemap_url)
+            if response.status_code != 200:
+                st.write(f"Error: Sitemap {sitemap_url} returned status code {response.status_code}")
+                continue
+
             sitemap_content = response.content
             soup = BeautifulSoup(sitemap_content, 'xml')
             urls = [loc.text for loc in soup.find_all('loc')]
+
+            if not urls:
+                st.write(f"No URLs found in sitemap: {sitemap_url}")
+                continue
+
             selected_urls = [url for url in urls if any(filter in url for filter in filters)]
-            
+            if not selected_urls:
+                st.write(f"No matching URLs found in sitemap: {sitemap_url}")
+                continue
+
             for url in selected_urls:
-                try:
-                    docs = load_documents_from_url(url)
-                    docs = loader.load()
+                docs = load_documents_from_url(url)
+                if docs:
                     for doc in docs:
                         doc.metadata["source"] = url
                     loaded_docs.extend(docs)
-                except Exception as e:
-                    st.write(f"Error loading {url}: {e}")
+                else:
+                    st.write(f"No documents loaded for URL: {url}")
+
         except Exception as e:
             st.write(f"Error processing sitemap {sitemap_url}: {e}")
+
+    if not loaded_docs:
+        st.write("No documents were loaded from the provided sitemaps and filters.")
     return loaded_docs
+
 
 @st.cache_resource
 def create_embeddings(docs):
