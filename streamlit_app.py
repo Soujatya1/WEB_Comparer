@@ -26,13 +26,13 @@ if "retrieval_chain" not in st.session_state:
 sitemap_urls_input = st.text_area("Enter sitemap URLs (one per line):")
 filter_words_input = st.text_area("Enter filter words (one per line):")
 
+all_urls = []
+filtered_urls = []
+loaded_docs = []
+
 if st.button("Load and Process"):
     sitemap_urls = sitemap_urls_input.splitlines()
     filter_urls = filter_words_input.splitlines()
-
-    all_urls = []
-    filtered_urls = []
-    loaded_docs = []
 
     for sitemap_url in sitemap_urls:
         try:
