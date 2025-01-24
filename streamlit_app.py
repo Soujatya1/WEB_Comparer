@@ -58,7 +58,6 @@ def load_and_split_documents(urls, filters):
             st.write(f"Error processing sitemap {sitemap_url}: {e}")
     return loaded_docs
     
-@st.cache_resource
 def create_embeddings(docs):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=100)
     chunks = text_splitter.split_documents(docs)
