@@ -63,7 +63,7 @@ def load_and_split_documents(urls, filters):
 def create_embeddings(docs):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=100)
     chunks = text_splitter.split_documents(docs)
-    vector_db = FAISS.from_documents(chunks, hf_embedding_model)
+    vector_db = FAISS.from_documents(chunks, hf_embedding)
     return vector_db, chunks
 
 # Load and Process Documents with Caching
