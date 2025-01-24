@@ -71,14 +71,13 @@ if st.button("Load and Process"):
     # Store loaded documents in session state
     st.session_state.loaded_docs = loaded_docs
 
-    if api_key:
-        llm = ChatGroq(groq_api_key="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", model_name='llama-3.1-70b-versatile', temperature=0.2, top_p=0.2)
+llm = ChatGroq(groq_api_key="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", model_name='llama-3.1-70b-versatile', temperature=0.2, top_p=0.2)
 
-        # Embedding
-        hf_embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-MiniLM-L3-v2")
+# Embedding
+hf_embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-MiniLM-L3-v2")
 
-        # Craft ChatPrompt Template
-        prompt = ChatPromptTemplate.from_template(
+# Craft ChatPrompt Template
+prompt = ChatPromptTemplate.from_template(
             """
             You are a Life Insurance specialist who needs to answer queries based on the information provided in the websites only. Please follow all the websites, and answer as per the same.
 
@@ -99,37 +98,36 @@ if st.button("Load and Process"):
             Question: {input}"""
         )
 
-        # Text Splitting
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=500,
-            chunk_overlap=100,
-            length_function=len,
-        )
+# Text Splitting
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=500,
+    chunk_overlap=100,
+    length_function=len,
+)
 
-        document_chunks = text_splitter.split_documents(loaded_docs)
-        st.write(f"Number of chunks: {len(document_chunks)}")
+document_chunks = text_splitter.split_documents(loaded_docs)
+st.write(f"Number of chunks: {len(document_chunks)}")
 
-        # Vector database storage
-        vector_db = FAISS.from_documents(document_chunks, hf_embedding)
+# Vector database storage
+vector_db = FAISS.from_documents(document_chunks, hf_embedding)
 
-        # Stuff Document Chain Creation
-        document_chain = create_stuff_documents_chain(llm, prompt)
+# Stuff Document Chain Creation
+document_chain = create_stuff_documents_chain(llm, prompt)
 
         # Retriever from Vector store
-        retriever = vector_db.as_retriever()
+retriever = vector_db.as_retriever()
 
         # Create a retrieval chain
-        retrieval_chain = create_retrieval_chain(retriever, document_chain)
-
-        # Save retriever and retrieval_chain to session state
-        #st.session_state.retriever = retriever
-        #st.session_state.retrieval_chain = retrieval_chain
-retriever = vector_db.as_retriever()
 retrieval_chain = create_retrieval_chain(retriever, document_chain)
+
+# Save retriever and retrieval_chain to session state
+st.session_state.retriever = retriever
+st.session_state.retrieval_chain = retrieval_chain
+
 query = st.text_input("Enter your query:")
 if st.button("Get Answer"):
     if query:
-        response = retrieval_chain.invoke({"input": query})
+        response = st.session_state.retrieval_chain.invoke({"input": query})
         st.write("Response:")
         st.write(response['answer'])
     else:
