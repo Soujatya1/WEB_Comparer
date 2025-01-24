@@ -71,7 +71,7 @@ if "vectors" not in st.session_state:
     st.session_state.final_documents = st.session_state.text_splitter.split_documents(st.session_state.loaded_docs)
     st.session_state.vectors = FAISS.from_documents(st.session_state.final_documents, st.session_state.embeddings)
 
-st.write(f"Number of chunks: {len(document_chunks)}")
+#st.write(f"Number of chunks: {len(document_chunks)}")
 
 # Craft ChatPrompt Template
 prompt = ChatPromptTemplate.from_template(
