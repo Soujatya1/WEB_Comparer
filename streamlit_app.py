@@ -19,57 +19,54 @@ st.title("Website Intelligence")
 
 api_key = "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"
 
-sitemap_urls_input = st.text_area("Enter sitemap URLs (one per line):")
-filter_words_input = st.text_area("Enter filter words (one per line):")
+# Input Sitemap URLs and Filters
+sitemap_urls_input = "https://www.reliancenipponlife.com/sitemap.xml\nhttps://www.hdfclife.com/universal-sitemap.xml"
+filter_words_input = "retired"
 
-if st.button("Load and Process"):
-    sitemap_urls = sitemap_urls_input.splitlines()
-    filter_urls = filter_words_input.splitlines()
-    
-    all_urls = []
-    filtered_urls = []
-    loaded_docs = []
-    
-    for sitemap_url in sitemap_urls:
-        try:
-            response = requests.get(sitemap_url)
-            sitemap_content = response.content
+sitemap_urls = sitemap_urls_input.splitlines()
+filter_urls = filter_words_input.splitlines()
 
-            # Parse sitemap URL
-            soup = BeautifulSoup(sitemap_content, 'xml')
-            urls = [loc.text for loc in soup.find_all('loc')]
-
-            # Filter URLs
-            selected_urls = [url for url in urls if any(filter in url for filter in filter_urls)]
-
-            # Append URLs to the main list
-            filtered_urls.extend(selected_urls)
-
-            for url in filtered_urls:
-                try:
-                    st.write(f"Loading URL: {url}")
-                    loader = WebBaseLoader(url)
-                    docs = loader.load()
-
-                    for doc in docs:
-                        doc.metadata["source"] = url
-
-                    loaded_docs.extend(docs)
-                    st.write("Successfully loaded document")
-                except Exception as e:
-                    st.write(f"Error loading {url}: {e}")
-
-        except Exception as e:
-            st.write(f"Error processing sitemap {sitemap_url}: {e}")
-    
-    st.write(f"Loaded documents: {len(loaded_docs)}")
-
+# Load and Process Documents
+all_urls = []
+filtered_urls = []
 loaded_docs = []
-    
 
-llm = ChatGroq(groq_api_key="api_key", model_name='llama-3.1-70b-versatile', temperature=0.2, top_p=0.2)
+for sitemap_url in sitemap_urls:
+    try:
+        response = requests.get(sitemap_url)
+        sitemap_content = response.content
 
-# Embedding
+        # Parse sitemap URL
+        soup = BeautifulSoup(sitemap_content, 'xml')
+        urls = [loc.text for loc in soup.find_all('loc')]
+
+        # Filter URLs
+        selected_urls = [url for url in urls if any(filter in url for filter in filter_urls)]
+
+        # Append URLs to the main list
+        filtered_urls.extend(selected_urls)
+
+        for url in filtered_urls:
+            try:
+                st.write(f"Loading URL: {url}")
+                loader = WebBaseLoader(url)
+                docs = loader.load()
+
+                for doc in docs:
+                    doc.metadata["source"] = url
+
+                loaded_docs.extend(docs)
+                st.write("Successfully loaded document")
+            except Exception as e:
+                st.write(f"Error loading {url}: {e}")
+
+    except Exception as e:
+        st.write(f"Error processing sitemap {sitemap_url}: {e}")
+
+st.write(f"Loaded documents: {len(loaded_docs)}")
+
+# Initialize LLM and Embedding
+llm = ChatGroq(groq_api_key=api_key, model_name='llama-3.1-70b-versatile', temperature=0.2, top_p=0.2)
 hf_embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
 
 # Craft ChatPrompt Template
@@ -93,7 +90,7 @@ prompt = ChatPromptTemplate.from_template(
 
         Question: {input}"""
     )
-        
+
 # Text Splitting
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=2000,
@@ -118,8 +115,7 @@ retrieval_chain = create_retrieval_chain(retriever, document_chain)
 
 # Query
 query = st.text_input("Enter your query:")
-if st.button("Get Answer"):
-    if query:
-        response = retrieval_chain.invoke({"input": query})
-        st.write("Response:")
-        st.write(response['answer'])
+if query:
+    response = retrieval_chain.invoke({"input": query})
+    st.write("Response:")
+    st.write(response['answer'])
