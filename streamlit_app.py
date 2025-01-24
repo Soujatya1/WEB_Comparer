@@ -107,9 +107,16 @@ retriever = vector_db.as_retriever()
 # Create a retrieval chain
 retrieval_chain = create_retrieval_chain(retriever, document_chain)
 
-# Query
-query = st.text_input("Enter your query:")
-if query:
-    response = retrieval_chain.invoke({"input": query})
+# Query Input Box
+with st.container():
+    prompt1 = st.text_input("Enter your question here.....", key="user_input", placeholder="Type your question...")
+
+# Query Processing
+if prompt1 and "vectors" in st.session_state:
+    document_chain = create_stuff_documents_chain(llm, prompt)
+    retriever = st.session_state.vectors.as_retriever(search_type="similarity", k=2)
+    retrieval_chain = create_retrieval_chain(retriever, document_chain)
+    response = retrieval_chain.invoke({'input': prompt1})
+    answer = response['answer']
     st.write("Response:")
-    st.write(response['answer'])
+    st.write(answer)
