@@ -21,7 +21,7 @@ api_key = "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"
 
 # Input Sitemap URLs and Filters
 sitemap_urls_input = "https://www.reliancenipponlife.com/sitemap.xml\nhttps://www.hdfclife.com/universal-sitemap.xml"
-filter_words_input = "retired"
+filter_words_input = "retirement-plans"
 
 sitemap_urls = sitemap_urls_input.splitlines()
 filter_urls = filter_words_input.splitlines()
@@ -58,7 +58,7 @@ for sitemap_url in sitemap_urls:
                 loaded_docs.extend(docs)
                 st.write("Successfully loaded document")
             except Exception as e:
-                st.write(f"Error loading {url}: {e}")
+                #st.write(f"Error loading {url}: {e}")
 
     except Exception as e:
         st.write(f"Error processing sitemap {sitemap_url}: {e}")
