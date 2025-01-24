@@ -22,7 +22,7 @@ hf_embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet
 
 # Input Sitemap URLs and Filters
 sitemap_urls_input = "https://www.reliancenipponlife.com/sitemap.xml\nhttps://www.hdfclife.com/universal-sitemap.xml"
-filter_words_input = "retirement-plans"
+filter_words_input = "http"
 
 sitemap_urls = sitemap_urls_input.splitlines()
 filter_urls = filter_words_input.splitlines()
