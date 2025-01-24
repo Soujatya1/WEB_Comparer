@@ -122,13 +122,13 @@ if st.button("Load and Process"):
         retrieval_chain = create_retrieval_chain(retriever, document_chain)
 
         # Save retriever and retrieval_chain to session state
-        st.session_state.retriever = retriever
-        st.session_state.retrieval_chain = retrieval_chain
+        #st.session_state.retriever = retriever
+        #st.session_state.retrieval_chain = retrieval_chain
 
 query = st.text_input("Enter your query:")
 if st.button("Get Answer"):
     if query:
-        response = st.session_state.retrieval_chain.invoke({"input": query})
+        response = retrieval_chain.invoke({"input": query})
         st.write("Response:")
         st.write(response['answer'])
     else:
