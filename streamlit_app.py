@@ -60,7 +60,7 @@ def load_and_split_documents(urls, filters):
     return loaded_docs
 
 @st.cache_resource
-def create_embeddings(docs, hf_embedding_model):
+def create_embeddings(docs):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=100)
     chunks = text_splitter.split_documents(docs)
     vector_db = FAISS.from_documents(chunks, hf_embedding_model)
@@ -78,7 +78,7 @@ hf_embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet
 
 # Create Embeddings with Caching
 with st.spinner("Generating embeddings and creating vector database..."):
-    vector_db, document_chunks = create_embeddings(loaded_docs, hf_embedding)
+    vector_db, document_chunks = create_embeddings(loaded_docs)
 
 st.write(f"Number of chunks: {len(document_chunks)}")
 
