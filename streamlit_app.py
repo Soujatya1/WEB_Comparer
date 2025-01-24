@@ -64,61 +64,60 @@ if st.button("Load and Process"):
     
     st.write(f"Loaded documents: {len(loaded_docs)}")
     
-    # LLM
-    if api_key:
-        llm = ChatGroq(groq_api_key="api_key", model_name='llama-3.1-70b-versatile', temperature=0.2, top_p=0.2)
 
-        # Embedding
-        hf_embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
+llm = ChatGroq(groq_api_key="api_key", model_name='llama-3.1-70b-versatile', temperature=0.2, top_p=0.2)
 
-        # Craft ChatPrompt Template
-        prompt = ChatPromptTemplate.from_template(
-            """
-            You are a Life Insurance specialist who needs to answer queries based on the information provided in the websites only. Please follow all the websites, and answer as per the same.
+# Embedding
+hf_embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
 
-            Do not answer anything except from the website information which has been entered. Please do not skip any information from the tabular data in the website.
+# Craft ChatPrompt Template
+prompt = ChatPromptTemplate.from_template(
+    """
+        You are a Life Insurance specialist who needs to answer queries based on the information provided in the websites only. Please follow all the websites, and answer as per the same.
 
-            Do not skip any information from the context. Answer appropriately as per the query asked.
+        Do not answer anything except from the website information which has been entered. Please do not skip any information from the tabular data in the website.
 
-            Now, being an excellent Life Insurance agent, you need to compare your policies against the other company's policies in the websites, if asked.
+        Do not skip any information from the context. Answer appropriately as per the query asked.
 
-            Generate tabular data wherever required to classify the difference between different parameters of policies.
+        Now, being an excellent Life Insurance agent, you need to compare your policies against the other company's policies in the websites, if asked.
 
-            I will tip you with a $1000 if the answer provided is helpful.
+        Generate tabular data wherever required to classify the difference between different parameters of policies.
 
-            <context>
-            {context}
-            </context>
+        I will tip you with a $1000 if the answer provided is helpful.
 
-            Question: {input}"""
-        )
+        <context>
+        {context}
+        </context>
+
+        Question: {input}"""
+    )
         
-        # Text Splitting
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=2000,
-            chunk_overlap=100,
-            length_function=len,
-        )
+# Text Splitting
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=2000,
+    chunk_overlap=100,
+    length_function=len,
+)
 
-        document_chunks = text_splitter.split_documents(loaded_docs)
-        st.write(f"Number of chunks: {len(document_chunks)}")
+document_chunks = text_splitter.split_documents(loaded_docs)
+st.write(f"Number of chunks: {len(document_chunks)}")
 
-        # Vector database storage
-        vector_db = FAISS.from_documents(document_chunks, hf_embedding)
+# Vector database storage
+vector_db = FAISS.from_documents(document_chunks, hf_embedding)
 
-        # Stuff Document Chain Creation
-        document_chain = create_stuff_documents_chain(llm, prompt)
+# Stuff Document Chain Creation
+document_chain = create_stuff_documents_chain(llm, prompt)
 
-        # Retriever from Vector store
-        retriever = vector_db.as_retriever()
+# Retriever from Vector store
+retriever = vector_db.as_retriever()
 
-        # Create a retrieval chain
-        retrieval_chain = create_retrieval_chain(retriever, document_chain)
+# Create a retrieval chain
+retrieval_chain = create_retrieval_chain(retriever, document_chain)
 
-        # Query
-        query = st.text_input("Enter your query:")
-        if st.button("Get Answer"):
-            if query:
-                response = retrieval_chain.invoke({"input": query})
-                st.write("Response:")
-                st.write(response['answer'])
+# Query
+query = st.text_input("Enter your query:")
+if st.button("Get Answer"):
+    if query:
+        response = retrieval_chain.invoke({"input": query})
+        st.write("Response:")
+        st.write(response['answer'])
