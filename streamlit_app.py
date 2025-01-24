@@ -105,7 +105,7 @@ text_splitter = RecursiveCharacterTextSplitter(
     length_function=len,
 )
 
-document_chunks = text_splitter.split_documents(loaded_docs)
+document_chunks = text_splitter.split_documents(st.session_state.loaded_docs)
 st.write(f"Number of chunks: {len(document_chunks)}")
 
 # Vector database storage
