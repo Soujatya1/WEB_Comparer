@@ -69,7 +69,7 @@ if st.button("Load and Process"):
         llm = ChatGroq(groq_api_key="api_key", model_name='llama-3.1-70b-versatile', temperature=0.2, top_p=0.2)
 
         # Embedding
-        hf_embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
+        hf_embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-MiniLM-L3-v2")
 
         # Craft ChatPrompt Template
         prompt = ChatPromptTemplate.from_template(
@@ -95,7 +95,7 @@ if st.button("Load and Process"):
         
         # Text Splitting
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=2000,
+            chunk_size=500,
             chunk_overlap=100,
             length_function=len,
         )
