@@ -10,7 +10,6 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains import create_retrieval_chain
 from langchain.document_loaders import WebBaseLoader
-from langchain.document_loaders import PyPDFLoader
 import requests
 from bs4 import BeautifulSoup
 
@@ -26,11 +25,7 @@ filter_words_input = "retirement-plans"
 sitemap_urls = sitemap_urls_input.splitlines()
 filter_urls = filter_words_input.splitlines()
 
-# Load and Process Documents
-all_urls = []
-filtered_urls = []
-loaded_docs = []
-
+# Define Cached Functions
 @st.cache_data
 def load_and_split_documents(urls, filters):
     loaded_docs = []
@@ -55,9 +50,28 @@ def load_and_split_documents(urls, filters):
             st.write(f"Error processing sitemap {sitemap_url}: {e}")
     return loaded_docs
 
+@st.cache_resource
+def create_embeddings(docs, hf_embedding_model):
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=100)
+    chunks = text_splitter.split_documents(docs)
+    vector_db = FAISS.from_documents(chunks, hf_embedding_model)
+    return vector_db, chunks
+
+# Load and Process Documents with Caching
+with st.spinner("Loading and processing documents..."):
+    loaded_docs = load_and_split_documents(sitemap_urls, filter_urls)
+
+st.write(f"Loaded documents: {len(loaded_docs)}")
+
 # Initialize LLM and Embedding
 llm = ChatGroq(groq_api_key=api_key, model_name='llama-3.1-70b-versatile', temperature=0.2, top_p=0.2)
 hf_embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
+
+# Create Embeddings with Caching
+with st.spinner("Generating embeddings and creating vector database..."):
+    vector_db, document_chunks = create_embeddings(loaded_docs, hf_embedding)
+
+st.write(f"Number of chunks: {len(document_chunks)}")
 
 # Craft ChatPrompt Template
 prompt = ChatPromptTemplate.from_template(
@@ -79,20 +93,7 @@ prompt = ChatPromptTemplate.from_template(
         </context>
 
         Question: {input}"""
-    )
-
-# Text Splitting
-text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=2000,
-    chunk_overlap=100,
-    length_function=len,
 )
-
-document_chunks = text_splitter.split_documents(loaded_docs)
-st.write(f"Number of chunks: {len(document_chunks)}")
-
-# Vector database storage
-vector_db = FAISS.from_documents(document_chunks, hf_embedding)
 
 # Stuff Document Chain Creation
 document_chain = create_stuff_documents_chain(llm, prompt)
