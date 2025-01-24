@@ -25,6 +25,15 @@ filter_words_input = "retirement-plans"
 sitemap_urls = sitemap_urls_input.splitlines()
 filter_urls = filter_words_input.splitlines()
 
+def load_documents_from_url(url):
+    """Loads documents from a given URL."""
+    try:
+        loader = SitemapLoader(web_path=url)
+        return loader.load()
+    except Exception as e:
+        st.write(f"Error loading {url}: {e}")
+        return []
+
 # Define Cached Functions
 @st.cache_data
 def load_and_split_documents(urls, filters):
@@ -39,7 +48,7 @@ def load_and_split_documents(urls, filters):
             
             for url in selected_urls:
                 try:
-                    loader = WebBaseLoader(url)
+                    docs = load_documents_from_url(url)
                     docs = loader.load()
                     for doc in docs:
                         doc.metadata["source"] = url
