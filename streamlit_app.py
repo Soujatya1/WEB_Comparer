@@ -32,39 +32,28 @@ filtered_urls = []
 loaded_docs = []
 
 @st.cache_data
-for sitemap_url in sitemap_urls:
-    try:
-        response = requests.get(sitemap_url)
-        sitemap_content = response.content
-
-        # Parse sitemap URL
-        soup = BeautifulSoup(sitemap_content, 'xml')
-        urls = [loc.text for loc in soup.find_all('loc')]
-
-        # Filter URLs
-        selected_urls = [url for url in urls if any(filter in url for filter in filter_urls)]
-
-        # Append URLs to the main list
-        filtered_urls.extend(selected_urls)
-
-        for url in filtered_urls:
-            try:
-                #st.write(f"Loading URL: {url}")
-                loader = WebBaseLoader(url)
-                docs = loader.load()
-
-                for doc in docs:
-                    doc.metadata["source"] = url
-
-                loaded_docs.extend(docs)
-                #st.write("Successfully loaded document")
-            except Exception as e:
-                st.write(f"Error loading {url}: {e}")
-
-    except Exception as e:
-        st.write(f"Error processing sitemap {sitemap_url}: {e}")
-
-st.write(f"Loaded documents: {len(loaded_docs)}")
+def load_and_split_documents(urls, filters):
+    loaded_docs = []
+    for sitemap_url in urls:
+        try:
+            response = requests.get(sitemap_url)
+            sitemap_content = response.content
+            soup = BeautifulSoup(sitemap_content, 'xml')
+            urls = [loc.text for loc in soup.find_all('loc')]
+            selected_urls = [url for url in urls if any(filter in url for filter in filters)]
+            
+            for url in selected_urls:
+                try:
+                    loader = WebBaseLoader(url)
+                    docs = loader.load()
+                    for doc in docs:
+                        doc.metadata["source"] = url
+                    loaded_docs.extend(docs)
+                except Exception as e:
+                    st.write(f"Error loading {url}: {e}")
+        except Exception as e:
+            st.write(f"Error processing sitemap {sitemap_url}: {e}")
+    return loaded_docs
 
 # Initialize LLM and Embedding
 llm = ChatGroq(groq_api_key=api_key, model_name='llama-3.1-70b-versatile', temperature=0.2, top_p=0.2)
