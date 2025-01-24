@@ -80,13 +80,10 @@ prompt = ChatPromptTemplate.from_template(
 
         Do not answer anything except from the website information which has been entered. Please do not skip any information from the tabular data in the website.
 
-        Do not skip any information from the context. Answer appropriately as per the query asked.
-
         Now, being an excellent Life Insurance agent, you need to compare your policies against the other company's policies in the websites, if asked.
 
         Generate tabular data wherever required to classify the difference between different parameters of policies.
-
-        I will tip you with a $1000 if the answer provided is helpful.
+        Answer appropriately as per the query asked.
 
         <context>
         {context}
