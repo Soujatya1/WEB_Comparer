@@ -37,7 +37,7 @@ def load_and_split_documents(urls, filters):
     return loaded_docs
 
 # Function to create embeddings
-def create_embeddings(documents, embedding_model="sentence-transformers/all-MiniLM-L6-v2"):
+def create_embeddings(loaded_docs, embedding_model="sentence-transformers/all-MiniLM-L6-v2"):
     """Creates embeddings using HuggingFace model."""
     tokenizer = AutoTokenizer.from_pretrained(embedding_model)
     model = AutoModel.from_pretrained(embedding_model)
