@@ -17,6 +17,8 @@ from bs4 import BeautifulSoup
 st.title("Website Intelligence")
 
 api_key = "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"
+llm = ChatGroq(groq_api_key=api_key, model_name='llama-3.1-70b-versatile', temperature=0.2, top_p=0.2)
+hf_embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
 
 # Input Sitemap URLs and Filters
 sitemap_urls_input = "https://www.reliancenipponlife.com/sitemap.xml\nhttps://www.hdfclife.com/universal-sitemap.xml"
@@ -68,10 +70,6 @@ with st.spinner("Loading and processing documents..."):
     loaded_docs = load_and_split_documents(sitemap_urls, filter_urls)
 
 st.write(f"Loaded documents: {len(loaded_docs)}")
-
-# Initialize LLM and Embedding
-llm = ChatGroq(groq_api_key=api_key, model_name='llama-3.1-70b-versatile', temperature=0.2, top_p=0.2)
-hf_embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
 
 # Create Embeddings with Caching
 with st.spinner("Generating embeddings and creating vector database..."):
