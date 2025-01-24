@@ -21,15 +21,12 @@ if "retrieval_chain" not in st.session_state:
     st.session_state.retrieval_chain = None
 
 sitemap_urls_input = st.text_area("Enter sitemap URLs (one per line):")
-filter_words_input = st.text_area("Enter filter words (one per line):")
 
 all_urls = []
-filtered_urls = []
 loaded_docs = []
 
 if st.button("Load and Process"):
     sitemap_urls = sitemap_urls_input.splitlines()
-    filter_urls = filter_words_input.splitlines()
 
     for sitemap_url in sitemap_urls:
         try:
@@ -40,15 +37,12 @@ if st.button("Load and Process"):
             soup = BeautifulSoup(sitemap_content, 'xml')
             urls = [loc.text for loc in soup.find_all('loc')]
 
-            # Filter URLs
-            selected_urls = [url for url in urls if any(filter in url for filter in filter_urls)]
+            # Append all URLs to the main list (no filtering)
+            all_urls.extend(urls)
 
-            # Append URLs to the main list
-            filtered_urls.extend(selected_urls)
-
-            for url in filtered_urls:
+            for url in all_urls:
                 try:
-                    #st.write(f"Loading URL: {url}")
+                    st.write(f"Loading URL: {url}")
                     loader = WebBaseLoader(url)
                     docs = loader.load()
 
@@ -56,7 +50,7 @@ if st.button("Load and Process"):
                         doc.metadata["source"] = url
 
                     loaded_docs.extend(docs)
-                    #st.write("Successfully loaded document")
+                    st.write("Successfully loaded document")
                 except Exception as e:
                     st.write(f"Error loading {url}: {e}")
 
