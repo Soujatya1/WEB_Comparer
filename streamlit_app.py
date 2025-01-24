@@ -7,7 +7,6 @@ from langchain.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain.chains import create_retrieval_chain
 from langchain.document_loaders import WebBaseLoader
 import requests
 from bs4 import BeautifulSoup
@@ -18,8 +17,6 @@ st.title("Website Intelligence")
 # Initialize session state variables
 if "loaded_docs" not in st.session_state:
     st.session_state.loaded_docs = []
-if "retriever" not in st.session_state:
-    st.session_state.retriever = None
 if "retrieval_chain" not in st.session_state:
     st.session_state.retrieval_chain = None
 
@@ -71,10 +68,8 @@ if st.button("Load and Process"):
     # Store loaded documents in session state
 st.session_state.loaded_docs = loaded_docs
 
+# LLM and Embedding initialization
 llm = ChatGroq(groq_api_key="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", model_name='llama-3.1-70b-versatile', temperature=0.2, top_p=0.2)
-
-# Embedding
-hf_embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-MiniLM-L3-v2")
 
 # Craft ChatPrompt Template
 prompt = ChatPromptTemplate.from_template(
@@ -108,26 +103,18 @@ text_splitter = RecursiveCharacterTextSplitter(
 document_chunks = text_splitter.split_documents(st.session_state.loaded_docs)
 st.write(f"Number of chunks: {len(document_chunks)}")
 
-# Vector database storage
-vector_db = FAISS.from_documents(document_chunks, hf_embedding)
-
 # Stuff Document Chain Creation
 document_chain = create_stuff_documents_chain(llm, prompt)
 
-        # Retriever from Vector store
-retriever = vector_db.as_retriever()
-
-        # Create a retrieval chain
-retrieval_chain = create_retrieval_chain(retriever, document_chain)
-
-# Save retriever and retrieval_chain to session state
-st.session_state.retriever = retriever
-st.session_state.retrieval_chain = retrieval_chain
+# Save document chain to session state
+st.session_state.retrieval_chain = document_chain
 
 query = st.text_input("Enter your query:")
 if st.button("Get Answer"):
     if query:
-        response = st.session_state.retrieval_chain.invoke({"input": query})
+        # Directly pass the documents to the chain without using a retriever
+        context = "\n".join([doc.page_content for doc in st.session_state.loaded_docs])
+        response = st.session_state.retrieval_chain.invoke({"input": query, "context": context})
         st.write("Response:")
         st.write(response['answer'])
     else:
