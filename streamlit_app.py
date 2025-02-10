@@ -63,7 +63,7 @@ if st.button("Load and Process"):
 st.session_state.loaded_docs = loaded_docs
 
 # LLM and Embedding initialization
-llm = ChatGroq(groq_api_key="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", model_name='llama-3.1-70b-versatile', temperature=0.2, top_p=0.2)
+llm = ChatGroq(groq_api_key="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", model_name='llama-3.3-70b-versatile', temperature=0.2, top_p=0.2)
 
 # Craft ChatPrompt Template
 prompt = ChatPromptTemplate.from_template(
